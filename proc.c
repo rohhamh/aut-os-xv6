@@ -88,6 +88,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->ctime = ticks;
 
   release(&ptable.lock);
 
@@ -538,4 +539,20 @@ getTicks(void)
 {
   cprintf("%d\n", ticks);
   return ticks;
+}
+
+int
+getProcInfo(void)
+{
+  int first = 1;
+  for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    if (p->state == RUNNING) {
+      if (first) {
+        cprintf("%s %s %s\n", "NAME", "PID", "CREATE_TIME");
+        first = 0;
+      }
+      cprintf("%s %d %d\n", p->name, p->pid, p->ctime);
+    }
+  }
+  return 0;
 }
