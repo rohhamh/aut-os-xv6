@@ -50,6 +50,9 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
   int ctime;                   // Creation time
+  int isthread;                // differentiates between thread and process
+  int thread_count;            // number of threads for this process
+  int stack_top;               // top of stack
 };
 
 // Process memory is laid out contiguously, low addresses first:
