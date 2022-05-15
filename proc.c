@@ -170,7 +170,7 @@ growproc(int n)
 
   acquire(&thread);
   sz = curproc->sz;
-  if(n > 0){
+  if (n > 0) {
     if((sz = allocuvm(curproc->pgdir, sz, sz + n)) == 0){
       release(&thread);
       return -1;
@@ -182,10 +182,11 @@ growproc(int n)
     }
   }
   curproc->sz = sz;
+  
   acquire(&ptable.lock);
   struct proc* p;
   int child_count;
-  if (curproc->thread_count == 1) {
+  if (curproc->thread_count == -1) {
     curproc->parent->sz = curproc->sz;
     child_count = curproc->parent->thread_count - 2;
     if (child_count <= 0) {
@@ -281,7 +282,8 @@ int thread_create(void *stack) {
     return -1;
   }
 
-  np->isthread = 1;
+  // np->isthread = 1;
+  curproc->thread_count++;
   np->thread_count = -1;
   np->stack_top = (int) ((char*) stack + PGSIZE);
 
@@ -307,7 +309,6 @@ int thread_create(void *stack) {
       np->ofile[i] = filedup(curproc->ofile[i]);
   np->cwd = idup(curproc->cwd);
   
-  curproc->thread_count++;
 
   safestrcpy(np->name, curproc->name, sizeof(curproc->name));
 
@@ -332,7 +333,7 @@ int has_children(struct proc* process) {
   return 1;  
 }
 
-int thread_wait(void) {
+int thread_join(void) {
   struct proc *p;
   int pid, havekids;
   struct proc *curproc = myproc();
@@ -343,7 +344,7 @@ int thread_wait(void) {
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
       if (p->parent != curproc)
         continue;
-      if (p->thread_count == -1)
+      if (p->thread_count != -1)
         continue;
       havekids = 1;
       if (p->state == ZOMBIE) {
@@ -351,7 +352,7 @@ int thread_wait(void) {
         kfree(p->kstack);
         p->kstack = 0;
 
-        if (has_children(p) == 1)
+        if (has_children(p))
           freevm(p->pgdir);
         p->pid = 0;
         p->parent = 0;
@@ -359,15 +360,13 @@ int thread_wait(void) {
         p->killed = 0;
         p->state = UNUSED;
         p->stack_top = -1;
-        p->isthread = 0;
         p->thread_count = 0;
         p->pgdir = 0;
         release(&ptable.lock);
         return pid;
       }
     }
-  }
-   // No point waiting if we don't have any children.
+    // No point waiting if we don't have any children.
     if(!havekids || curproc->killed){
       release(&ptable.lock);
       return -1;
@@ -375,6 +374,11 @@ int thread_wait(void) {
 
     // Wait for children to exit.  (See wakeup1 call in proc_exit.)
     sleep(curproc, &ptable.lock);  //DOC: wait-sleep
+  }
+}
+
+int thread_id(void) {
+  return myproc()->pid;
 }
 
 // Exit the current process.  Does not return.
@@ -447,7 +451,7 @@ wait(void)
         pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;
-        if (has_children(p) == 1)
+        if (has_children(p))
           freevm(p->pgdir);
         p->pid = 0;
         p->parent = 0;

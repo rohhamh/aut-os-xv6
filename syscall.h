@@ -22,6 +22,6 @@
 #define SYS_close          21
 #define SYS_getTicks       22
 #define SYS_getProcInfo    23
-// #define SYS_thread_creator 24
 #define SYS_thread_create  24
-#define SYS_thread_wait    25
+#define SYS_thread_join    25
+#define SYS_thread_id      26

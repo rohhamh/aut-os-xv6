@@ -5,13 +5,6 @@
 int stack[4096] __attribute__ ((aligned(4096)));
 int x = 0;
 
-
-// int be_thread(int a) {
-//   printf(1, "hello a: %d\n", a);
-//   return 2;
-// }
-
-
 int
 main(int argc, char *argv[])
 {
@@ -26,8 +19,10 @@ main(int argc, char *argv[])
       sleep(100);
     }
   } else {
-    printf(1, "x = %d\n", x);
-    sleep(100);
+    for(;;) {
+      printf(1, "x = %d\n", x);
+      sleep(100);
+    }
   }
   exit();
 }

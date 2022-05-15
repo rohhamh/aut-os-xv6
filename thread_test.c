@@ -2,32 +2,33 @@
 #include "stat.h"
 #include "user.h"
 
-int stack[4096] __attribute__ ((aligned(4096)));
-int x = 0;
+int base = 0, limit = 5;
 
-
-// int be_thread(int a) {
-//   printf(1, "hello a: %d\n", a);
-//   return 2;
-// }
-
+int be_thread() {
+  // printf(1, "hello a: %d\n", a);
+  base++;
+  if (base == limit) {
+    printf(1, "\nID [%d] => HIT LIMIT!\n", thread_id());
+    exit();
+  } else {
+    int nul = 0;
+    thread_creator((void*)&be_thread, (void*) &nul);
+    int state = thread_join();
+    int tid = thread_id();
+    if (state != -1) {
+      printf(1, "\nID [%d] => [SUCCESS] 0\n", tid);
+    } else {
+      printf(1, "\nID [%d] => [FAILED] -1\n", tid);
+    }
+    // printf(1, "\nID [%d][%d] => %d\n", tid, thread_id(), tjoin);
+  }
+  return 1;
+}
 
 int
 main(int argc, char *argv[])
 {
-  // thread_creator((void*)&be_thread, (void*) 2);
-  int tid = thread_create(stack);
-
-  if (tid < 0) {
-    printf(2, "error\n");
-  } else if (tid == 0) {
-    for (;;) {
-      x++;
-      sleep(100);
-    }
-  } else {
-    printf(1, "x = %d\n", x);
-    sleep(100);
-  }
+  int nul = 0;
+  thread_creator((void*)&be_thread, (void*) &nul);
   exit();
 }
