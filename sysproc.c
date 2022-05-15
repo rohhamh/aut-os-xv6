@@ -103,11 +103,31 @@ sys_getProcInfo(void)
 }
 
 int
-sys_thread_create(void)
-{
+sys_thread_create(void) {
   void* p;
-  if (argptr(0, (void*)&p, sizeof(*p)) < 0) {
+  if (argptr(1, (void *)&p, sizeof(*p)) < 0) {
     return -1;
   }
   return thread_create(p);
 }
+
+int
+sys_thread_wait(void) {
+  return thread_wait();
+}
+
+// int
+// sys_thread_creator(void)
+// {
+//   // void* p;
+//   void (*fn)(void *);
+//   void *arg;
+//   if (argptr(0, (char **)&fn, sizeof(*fn)) < 0) {
+//     return -1;
+//   }
+//   if (argptr(1, (void *)&arg, sizeof(*arg)) < 0) {
+//     return -1;
+//   }
+//   // return thread_creator(fn, arg);
+//   return 1;
+// }
