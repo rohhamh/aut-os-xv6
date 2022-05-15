@@ -122,6 +122,7 @@ void            wakeup(void*);
 void            yield(void);
 int             getTicks(void);
 int             getProcInfo(void);
+int             thread_create(void*);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

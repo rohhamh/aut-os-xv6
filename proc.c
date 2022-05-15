@@ -13,6 +13,7 @@ struct {
 } ptable;
 
 static struct proc *initproc;
+struct spinlock thread;
 
 int nextpid = 1;
 extern void forkret(void);
@@ -91,6 +92,7 @@ found:
   p->ctime = ticks;
   p->isthread = 0;
   p->thread_count = 1;
+  p->stack_top = -1;
 
 
   release(&ptable.lock);
@@ -232,7 +234,7 @@ int thread_create(void *stack) {
   struct proc *curproc = myproc();
 
   // Allocate process.
-  if((np = allocproc()) == 0){
+  if((np = allocproc()) == 0) {
     return -1;
   }
 
@@ -244,23 +246,17 @@ int thread_create(void *stack) {
   np->sz = curproc->sz;
   release(&ptable.lock);
 
-  
-
-  // int stack_size = 
-
-  // Copy process state from proc.
-  // if((np->pgdir = copyuvm(curproc->pgdir, curproc->sz)) == 0){
-  //   kfree(np->kstack);
-  //   np->kstack = 0;
-  //   np->state = UNUSED;
-  //   return -1;
-  // }
-  np->sz = curproc->sz;
+  int bytes_on_stack = curproc->stack_top - curproc->tf->esp;
+  np->tf->esp = np->stack_top - bytes_on_stack;
+  memmove((void*)np->tf->esp, (void*)curproc->tf->esp, bytes_on_stack);
   np->parent = curproc;
   *np->tf = *curproc->tf;
 
   // Clear %eax so that thread_create returns 0 in the child.
   np->tf->eax = 0;
+
+  np->tf->esp = np->stack_top - bytes_on_stack;
+  np->tf->ebp = np->stack_top - (curproc->stack_top - curproc->tf->ebp);
 
   for(i = 0; i < NOFILE; i++)
     if(curproc->ofile[i])

@@ -105,6 +105,7 @@ extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_getTicks(void);
 extern int sys_getProcInfo(void);
+extern int sys_thread_create(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]        sys_fork,
@@ -129,7 +130,8 @@ static int (*syscalls[])(void) = {
 [SYS_mkdir]       sys_mkdir,
 [SYS_close]       sys_close,
 [SYS_getTicks]    sys_getTicks,
-[SYS_getProcInfo] sys_getProcInfo
+[SYS_getProcInfo] sys_getProcInfo,
+[SYS_thread_create] sys_thread_create
 };
 
 void
