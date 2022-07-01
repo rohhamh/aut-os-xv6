@@ -131,6 +131,15 @@ sys_change_policy(void) {
 }
 
 int
+sys_set_priority(void) {
+  int priority;
+  argint(0, &priority);
+  if (priority < 1 || priority > 6)
+    return -1;
+  return set_priority(priority);
+}
+
+int
 sys_print_time_stats(void) {
   return print_time_stats();
 }

@@ -19,6 +19,7 @@ be_child() {
 void test() {
   for (int i = 0; i < CHILD_COUNT; i++) {
     if (fork() == 0) {
+      set_priority(((i + 1) % 6) + 1 );
       be_child();
       exit();
     }
@@ -37,9 +38,16 @@ void test() {
 int
 main(int argc, char *argv[])
 {
-  change_policy(ROUND_ROBIN_QUANTUM);
-  test();
-  change_policy(PREEMPTIVE_PRIORITY_SCHEDULING);
-  test();
+  // set_priority(0);
+  // change_policy(ROUND_ROBIN_QUANTUM);
+  // if (fork() == 0)
+  //   test();
+  // else {
+  //   wait();
+    change_policy(PREEMPTIVE_PRIORITY_SCHEDULING);
+  //   if (fork() == 0)
+      test();
+  //   wait();
+  // }
   exit();
 }

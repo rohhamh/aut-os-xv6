@@ -127,6 +127,7 @@ int             thread_create(void *);
 int             thread_join(void);
 int             thread_id(void);
 int             change_policy(int);
+int             set_priority(int);
 int             print_time_stats(void);
 
 // swtch.S

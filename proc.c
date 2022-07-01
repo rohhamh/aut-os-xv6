@@ -530,8 +530,7 @@ scheduler(void)
         case ROUND_ROBIN:
           break;
         case PREEMPTIVE_PRIORITY_SCHEDULING:
-          struct proc *high_priority = p;
-          high_priority = get_highest_priority(high_priority);
+          p = get_highest_priority(p);
           break;
         default:
           break;
@@ -595,6 +594,14 @@ int
 change_policy(int policy) {
   scheduling_policy = policy;
   cprintf("Scheduling set to %d\n", scheduling_policy);
+  return 1;
+}
+
+int
+set_priority(int priority) {
+  struct proc *p = myproc();
+  p->priority = priority;
+  cprintf("Priority of %d updated to %d\n", p->pid, p->priority);
   return 1;
 }
 

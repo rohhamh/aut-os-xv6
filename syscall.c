@@ -109,6 +109,7 @@ extern int sys_thread_create(void);
 extern int sys_thread_join(void);
 extern int sys_thread_id(void);
 extern int sys_change_policy(void);
+extern int sys_set_priority(void);
 extern int sys_print_time_stats(void);
 
 static int (*syscalls[])(void) = {
@@ -139,6 +140,7 @@ static int (*syscalls[])(void) = {
 [SYS_thread_join]        sys_thread_join,
 [SYS_thread_id]          sys_thread_id,
 [SYS_change_policy]      sys_change_policy,
+[SYS_set_priority]       sys_set_priority,
 [SYS_print_time_stats]   sys_print_time_stats
 };
 

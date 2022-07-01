@@ -26,4 +26,5 @@
 #define SYS_thread_join      25
 #define SYS_thread_id        26
 #define SYS_change_policy    27
-#define SYS_print_time_stats 28
+#define SYS_set_priority     28
+#define SYS_print_time_stats 29

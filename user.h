@@ -30,6 +30,7 @@ int thread_join(void);
 int thread_id(void);
 int print_time_stats(void);
 int change_policy(int);
+int set_priority(int);
 
 // ulib.c
 int stat(const char*, struct stat*);
