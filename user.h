@@ -24,6 +24,7 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int getTicks(void);
+int wait2(int*,int*,int*,int*,int*,int*);
 int getProcInfo(void);
 int thread_create(void*);
 int thread_join(void);

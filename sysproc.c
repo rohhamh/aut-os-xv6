@@ -97,6 +97,26 @@ sys_getTicks(void)
 }
 
 int
+sys_wait2(void)
+{
+  int* priority;
+  int* runningTime;
+  int* sleepingTime;
+  int* terminationTime;
+  int* creationTime;
+  int* readyTime;
+  argptr(0, (char**)&priority ,sizeof(int));
+  argptr(1, (char**)&runningTime ,sizeof(int));
+  argptr(2, (char**)&sleepingTime , sizeof(int));
+  argptr(3, (char**)&terminationTime , sizeof(int));
+  argptr(4, (char**)&creationTime , sizeof(int));
+  argptr(5, (char**)&readyTime , sizeof(int));
+  return wait2(priority,runningTime,sleepingTime,terminationTime,creationTime,readyTime);
+}
+
+
+
+int
 sys_getProcInfo(void)
 {
   return getProcInfo();
