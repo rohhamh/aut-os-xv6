@@ -59,7 +59,7 @@ struct proc {
   int retime;                  // Process READY(RUNNABLE) time
   int stime;                   // Process SLEEPING time
   int quantum;                 // Process time slice for round robin scheduling
-  // int tickets;                 // Process tickets for LOTTERY scheduling
+  int tickets;                 // Process tickets count for LOTTERY scheduling
 };
 
 // Process memory is laid out contiguously, low addresses first:
@@ -69,3 +69,4 @@ struct proc {
 //   expandable heap
 
 void update_time_stats(void);
+#define INIT_TICKETS 10

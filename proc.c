@@ -6,6 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "random.h"
 
 struct {
   struct spinlock lock;
@@ -100,6 +101,7 @@ found:
   p->tetime = 0;
   p->quantum = QUANTUM;
   p->priority = 3;
+  p->tickets = INIT_TICKETS;
 
 
   release(&ptable.lock);
@@ -510,6 +512,24 @@ get_highest_priority(struct proc* curr) {
   return curr;
 }
 
+
+struct proc*
+draw_lots(struct proc *curr) {
+  int tickets = 0;
+  for(struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if (p->state == RUNNABLE || p->state == RUNNING) {
+      tickets += p->tickets;
+    }
+  }
+  int chosen = randomrange(1, tickets);
+  for(struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if ((p->state == RUNNABLE || p->state == RUNNING) && (chosen = chosen - p->tickets) <= 0) {
+      return p;
+    }
+  }
+  return curr;
+}
+
 void
 scheduler(void)
 {
@@ -525,7 +545,7 @@ scheduler(void)
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       switch (scheduling_policy) {
-        case ROUND_ROBIN: case ROUND_ROBIN_QUANTUM:
+        case ROUND_ROBIN: case ROUND_ROBIN_QUANTUM: default:
           if (p->state != RUNNABLE)
             continue;
           break;
@@ -534,7 +554,13 @@ scheduler(void)
             continue;
           p = get_highest_priority(p);
           break;
-        default:
+        case LOTTERY:
+          if (p->state != RUNNING && p->state != RUNNABLE)
+            continue;
+          p = draw_lots(p);
+          // if (p == 0)
+            // panic("lottery failed!");
+            // continue;
           break;
       }
       // Switch to chosen process.  It is the process's job
@@ -776,7 +802,7 @@ procdump(void)
       state = states[p->state];
     else
       state = "???";
-    cprintf("%d %s %s", p->pid, state, p->name);
+    cprintf("%d %s %s tickets[%d]", p->pid, state, p->name, p->tickets);
     if(p->state == SLEEPING){
       getcallerpcs((uint*)p->context->ebp+2, pc);
       for(i=0; i<10 && pc[i] != 0; i++)
