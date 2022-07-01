@@ -28,4 +28,4 @@
 #define SYS_change_policy    27
 #define SYS_set_priority     28
 #define SYS_print_time_stats 29
-#define SYS_wait2 30
+#define SYS_wait2            30
