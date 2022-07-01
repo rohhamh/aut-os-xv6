@@ -19,7 +19,6 @@ be_child() {
 void test() {
   for (int i = 0; i < CHILD_COUNT; i++) {
     if (fork() == 0) {
-      set_priority(((i + 1) % 6) + 1 );
       be_child();
       exit();
     }
