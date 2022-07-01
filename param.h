@@ -11,7 +11,7 @@
 #define LOGSIZE                          (MAXOPBLOCKS*3)  // max data blocks in on-disk log
 #define NBUF                             (MAXOPBLOCKS*3)  // size of disk block cache
 #define FSSIZE                           1000             // size of file system in blocks
-#define QUANTUM                          10               // time quantum for round robin scheduling
+#define QUANTUM                          1               // time quantum for round robin scheduling
 #define ROUND_ROBIN                      0                // round robin select
 #define ROUND_ROBIN_QUANTUM              1                // round robin custom quantum select
 #define PREEMPTIVE_PRIORITY_SCHEDULING   2                // preemptive priority scheduling

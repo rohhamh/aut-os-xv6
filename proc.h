@@ -58,6 +58,7 @@ struct proc {
   int rutime;                  // Process RUNNING time
   int retime;                  // Process READY(RUNNABLE) time
   int stime;                   // Process SLEEPING time
+  int quantum;                 // Process time slice for round robin scheduling
   // int tickets;                 // Process tickets for LOTTERY scheduling
 };
 
@@ -66,3 +67,5 @@ struct proc {
 //   original data and bss
 //   fixed-size stack
 //   expandable heap
+
+void update_time_stats(void);

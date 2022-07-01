@@ -123,9 +123,14 @@ sys_thread_id(void) {
 
 int
 sys_change_policy(void) {
-  int* p;
-  if (argint(0, (int *)&p) < 0) {
+  int p;
+  if (argint(0, &p) < 0) {
     return -1;
   }
-  return change_policy(*p);
+  return change_policy(p);
+}
+
+int
+sys_print_time_stats(void) {
+  return print_time_stats();
 }

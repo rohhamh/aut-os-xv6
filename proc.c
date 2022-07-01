@@ -12,8 +12,6 @@ struct {
   struct proc proc[NPROC];
 } ptable;
 
-int current_policy = 0;
-
 static struct proc *initproc;
 struct spinlock thread;
 
@@ -96,6 +94,12 @@ found:
   p->isthread = 0;
   p->thread_count = 1;
   p->stack_top = -1;
+  p->retime = 0;
+  p->rutime = 0;
+  p->stime = 0;
+  p->tetime = 0;
+  p->quantum = QUANTUM;
+  p->priority = 3;
 
 
   release(&ptable.lock);
@@ -463,6 +467,12 @@ wait(void)
         p->thread_count = 0;
         p->stack_top = -1;
         p->pgdir = 0;
+        p->tetime = 0;
+        p->retime = 0;
+        p->rutime = 0;
+        p->stime = 0;
+        p->ctime = 0;
+        p->priority = 0;
         release(&ptable.lock);
         return pid;
       }
@@ -487,6 +497,19 @@ wait(void)
 //  - swtch to start running that process
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
+
+struct proc*
+get_highest_priority(struct proc* curr) {
+  for(struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->state == RUNNABLE) {
+      if (p->priority <= curr->priority) {
+        curr = p;
+      }
+    }
+  }
+  return curr;
+}
+
 void
 scheduler(void)
 {
@@ -502,8 +525,17 @@ scheduler(void)
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
-        continue;
-
+          continue;
+      switch (scheduling_policy) {
+        case ROUND_ROBIN:
+          break;
+        case PREEMPTIVE_PRIORITY_SCHEDULING:
+          struct proc *high_priority = p;
+          high_priority = get_highest_priority(high_priority);
+          break;
+        default:
+          break;
+      }
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
@@ -561,7 +593,41 @@ yield(void)
 
 int
 change_policy(int policy) {
-  current_policy = policy;
+  scheduling_policy = policy;
+  cprintf("Scheduling set to %d\n", scheduling_policy);
+  return 1;
+}
+
+void update_time_stats(void) {
+  struct proc *p;
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    switch(p->state) {
+      case SLEEPING:
+        p->stime++;
+        break;
+      case RUNNABLE:
+        p->retime++;
+        break;
+      case RUNNING:
+        p->quantum--;
+        p->rutime++;
+        break;
+      default:
+        break;
+    }
+  }
+  release(&ptable.lock);
+}
+
+int
+print_time_stats(void) {
+  const struct proc *p = myproc();
+
+  // int* time_stats = malloc(5 * sizeof(int));
+  // int time_stats[] = {p->ctime, p->tetime, p->rutime, p->retime, p->stime};
+  cprintf("\nQUANTUM=%d\nPID:%d\nCreated=%d, Terminated=%d, RUNNING=%d, READY=%d, SLEEPING=%d\n", 
+              QUANTUM, p->pid, p->ctime, p->tetime, p->rutime, p->retime, p->stime);
   return 1;
 }
 

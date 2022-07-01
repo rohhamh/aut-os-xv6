@@ -110,6 +110,7 @@ int             growproc(int);
 int             kill(int);
 struct cpu*     mycpu(void);
 struct proc*    myproc();
+extern int      scheduling_policy;
 void            pinit(void);
 void            procdump(void);
 void            scheduler(void) __attribute__((noreturn));
@@ -126,6 +127,7 @@ int             thread_create(void *);
 int             thread_join(void);
 int             thread_id(void);
 int             change_policy(int);
+int             print_time_stats(void);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
