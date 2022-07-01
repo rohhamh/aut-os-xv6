@@ -99,8 +99,10 @@ found:
   p->rutime = 0;
   p->stime = 0;
   p->tetime = 0;
-  p->quantum = QUANTUM;
   p->priority = 3;
+  if (scheduling_policy == PREEMPTIVE_MULTILEVEL_QUEUE)
+    p->quantum = QUANTUM * p->priority;
+  else p->quantum = QUANTUM;
   p->tickets = INIT_TICKETS;
 
 
@@ -530,12 +532,83 @@ draw_lots(struct proc *curr) {
   return curr;
 }
 
+
+
+#define QUEUE_COUNT 6
+
+// struct proc* MLQ_process(int* queues, uint* priority) {
+struct proc* MLQ_process(int* recent) {
+  struct proc *chosen = 0;
+  int top_level_count = 0;
+  int best_priority = QUEUE_COUNT;
+
+  // int cur = 0;
+  for(struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    if (p->state != RUNNABLE && p->state != RUNNING)
+      continue;
+    if (p->priority < best_priority) {
+      best_priority = p->priority;
+      // cur = p->pid;
+    }
+  }
+
+  // cprintf("[%d]best priority: %d\n", cur, best_priority);
+
+  for(struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    if (p->state != RUNNABLE && p->state != RUNNING)
+      continue;
+    if (p->priority == best_priority) {
+      // cprintf("FOUND A TOP LEVEL! %d\n", p->pid);
+      top_level_count++;
+    }
+  }
+
+  // cprintf("top level: %d\n", top_level_count);
+
+  for (int i = /* top_level_count == 1 ? 0 : */ *recent; i < NPROC; i++) {
+    struct proc *p = &ptable.proc[i];
+    if (p->state != RUNNABLE && p->state != RUNNING)
+      continue;
+    if (p->priority == best_priority) {
+      *recent = p->pid;
+      return p;
+    }
+  }
+
+  if (chosen == 0) {
+    *recent = 0;
+    return MLQ_process(recent);
+  }
+  return chosen;
+//   int i;
+//   struct proc* p;
+// notfound:
+//   cprintf("priority %d\n", *priority);
+//   for (i = 0; i < NPROC; i++) {
+//     p = &ptable.proc[(queues[*priority] + i) % NPROC];
+//     if ((p->state == RUNNABLE || p->state == RUNNING) && p->priority == *priority){
+//       queues[*priority] = (p->pid + 1) % NPROC;
+//       return p;
+//     }
+//   }
+//   if (*priority == 7) {//did not find any process on any of the prorities
+//     *priority = 7;
+//     return 0;
+//   }
+//   else {
+//     *priority += 1; //will try to find a process at a lower priority (ighter value of priority)
+//     goto notfound;
+//   }
+//  return 0;
+}
+
 void
 scheduler(void)
 {
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
+  int recent = 0;
   
   for(;;){
     // Enable interrupts on this processor.
@@ -562,6 +635,18 @@ scheduler(void)
             // panic("lottery failed!");
             // continue;
           break;
+        case PREEMPTIVE_MULTILEVEL_QUEUE:
+          if (p->state != RUNNING && p->state != RUNNABLE)
+            continue;
+          p = MLQ_process(&recent);
+      //       struct proc *foundP = 0;
+
+      //       uint priority = 1;
+
+      //       int queues[7] = {0};
+      //       foundP = MLQ_process(queues, &priority);
+      //       if (foundP != 0)
+      //         p = foundP;
       }
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
@@ -629,6 +714,7 @@ set_priority(int priority) {
   // acquire(&ptable.lock);
   struct proc *p = myproc();
   p->priority = priority;
+  p->quantum = priority * QUANTUM;
   // cprintf("Priority of %d updated to %d\n", p->pid, p->priority);
   // p->state = RUNNABLE;
   // sched();
@@ -665,8 +751,8 @@ print_time_stats(void) {
   // int* time_stats = malloc(5 * sizeof(int));
   // int time_stats[] = {p->ctime, p->tetime, p->rutime, p->retime, p->stime};
   cprintf("\nQUANTUM=%d\nPID:%d\nCreated=%d, Terminated=%d, RUNNING=%d, READY=%d, SLEEPING=%d\n", 
-              scheduling_policy == ROUND_ROBIN_QUANTUM ? QUANTUM : 1,
-                           p->pid, p->ctime, ticks, p->rutime, p->retime, p->stime);
+  scheduling_policy == ROUND_ROBIN_QUANTUM || scheduling_policy == PREEMPTIVE_MULTILEVEL_QUEUE ? QUANTUM : 1,
+                         p->pid, p->ctime, ticks, p->rutime, p->retime, p->stime);
   return 1;
 }
 
@@ -802,7 +888,7 @@ procdump(void)
       state = states[p->state];
     else
       state = "???";
-    cprintf("%d %s %s tickets[%d]", p->pid, state, p->name, p->tickets);
+    cprintf("%d %s %s priority[%d] quantum[%d] tickets[%d]", p->pid, state, p->name, p->priority, p->quantum, p->tickets);
     if(p->state == SLEEPING){
       getcallerpcs((uint*)p->context->ebp+2, pc);
       for(i=0; i<10 && pc[i] != 0; i++)

@@ -189,6 +189,7 @@ UPROGS=\
 	_rrtest\
 	_pstest\
 	_lottest\
+	_mlqtest\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
@@ -262,7 +263,7 @@ EXTRA=\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\
 	getTicks getProcInfo thread_test threads\
-	rrtest pstest lottest\
+	rrtest pstest lottest mlqtest\
 
 
 dist:
