@@ -122,6 +122,7 @@ int             wait(void);
 void            wakeup(void*);
 void            yield(void);
 int             getTicks(void);
+int             wait2(int* ,int*  , int*  , int*  , int*  , int* );
 int             getProcInfo(void);
 int             thread_create(void *);
 int             thread_join(void);
