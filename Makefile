@@ -185,6 +185,7 @@ UPROGS=\
 	_getProcInfo\
 	_thread_test\
 	_threads\
+	_round_robin_test\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
@@ -258,6 +259,8 @@ EXTRA=\
 	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
 	.gdbinit.tmpl gdbutil\
 	getTicks getProcInfo thread_test threads\
+	round_robin_test\
+
 
 dist:
 	rm -rf dist

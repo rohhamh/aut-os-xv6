@@ -12,6 +12,8 @@ struct {
   struct proc proc[NPROC];
 } ptable;
 
+int current_policy = 0;
+
 static struct proc *initproc;
 struct spinlock thread;
 
@@ -555,6 +557,12 @@ yield(void)
   myproc()->state = RUNNABLE;
   sched();
   release(&ptable.lock);
+}
+
+int
+change_policy(int policy) {
+  current_policy = policy;
+  return 1;
 }
 
 // A fork child's very first scheduling by scheduler()

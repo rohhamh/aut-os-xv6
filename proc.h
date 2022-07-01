@@ -49,10 +49,16 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+  int isthread;                // Differentiates between thread and process
+  int thread_count;            // Number of threads for this process
+  int stack_top;               // Top of stack
+  int priority;                // Priority of process, ranges from 1 to 6, defaults to 3
   int ctime;                   // Creation time
-  int isthread;                // differentiates between thread and process
-  int thread_count;            // number of threads for this process
-  int stack_top;               // top of stack
+  int tetime;                  // Process termination time
+  int rutime;                  // Process RUNNING time
+  int retime;                  // Process READY(RUNNABLE) time
+  int stime;                   // Process SLEEPING time
+  // int tickets;                 // Process tickets for LOTTERY scheduling
 };
 
 // Process memory is laid out contiguously, low addresses first:

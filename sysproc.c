@@ -120,3 +120,12 @@ int
 sys_thread_id(void) {
   return thread_id();
 }
+
+int
+sys_change_policy(void) {
+  int* p;
+  if (argint(0, (int *)&p) < 0) {
+    return -1;
+  }
+  return change_policy(*p);
+}

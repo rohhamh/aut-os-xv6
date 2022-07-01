@@ -125,6 +125,7 @@ int             getProcInfo(void);
 int             thread_create(void *);
 int             thread_join(void);
 int             thread_id(void);
+int             change_policy(int);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
