@@ -133,9 +133,10 @@ sys_change_policy(void) {
 int
 sys_set_priority(void) {
   int priority;
-  argint(0, &priority);
-  if (priority < 1 || priority > 6)
+  if (argint(0, &priority) < 0) 
     return -1;
+  if (priority < 1 || priority > 6)
+    priority = 5;
   return set_priority(priority);
 }
 

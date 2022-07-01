@@ -107,12 +107,12 @@ trap(struct trapframe *tf)
   if(myproc() && myproc()->state == RUNNING &&
      tf->trapno == T_IRQ0+IRQ_TIMER) {
        if (scheduling_policy == ROUND_ROBIN_QUANTUM) {
-         struct proc *running = myproc();
-         if (running->quantum <= 0) {
+         if (myproc()->quantum <= 0) {
            yield();
          }
-       } else
+       } else {
           yield();
+       }
   }
 
   // Check if the process has been killed since we yielded

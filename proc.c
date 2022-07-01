@@ -501,8 +501,8 @@ wait(void)
 struct proc*
 get_highest_priority(struct proc* curr) {
   for(struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-    if(p->state == RUNNABLE) {
-      if (p->priority <= curr->priority) {
+    if(p->state == RUNNABLE || p->state == RUNNING) {
+      if (p->pid != curr->pid && p->priority < curr->priority) {
         curr = p;
       }
     }
@@ -524,12 +524,14 @@ scheduler(void)
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
-          continue;
       switch (scheduling_policy) {
-        case ROUND_ROBIN:
+        case ROUND_ROBIN: case ROUND_ROBIN_QUANTUM:
+          if (p->state != RUNNABLE)
+            continue;
           break;
         case PREEMPTIVE_PRIORITY_SCHEDULING:
+          if (p->state != RUNNING && p->state != RUNNABLE)
+            continue;
           p = get_highest_priority(p);
           break;
         default:
@@ -550,7 +552,6 @@ scheduler(void)
       c->proc = 0;
     }
     release(&ptable.lock);
-
   }
 }
 
@@ -599,9 +600,13 @@ change_policy(int policy) {
 
 int
 set_priority(int priority) {
+  // acquire(&ptable.lock);
   struct proc *p = myproc();
   p->priority = priority;
-  cprintf("Priority of %d updated to %d\n", p->pid, p->priority);
+  // cprintf("Priority of %d updated to %d\n", p->pid, p->priority);
+  // p->state = RUNNABLE;
+  // sched();
+  // release(&ptable.lock);
   return 1;
 }
 
@@ -634,7 +639,8 @@ print_time_stats(void) {
   // int* time_stats = malloc(5 * sizeof(int));
   // int time_stats[] = {p->ctime, p->tetime, p->rutime, p->retime, p->stime};
   cprintf("\nQUANTUM=%d\nPID:%d\nCreated=%d, Terminated=%d, RUNNING=%d, READY=%d, SLEEPING=%d\n", 
-              QUANTUM, p->pid, p->ctime, p->tetime, p->rutime, p->retime, p->stime);
+              scheduling_policy == ROUND_ROBIN_QUANTUM ? QUANTUM : 1,
+                           p->pid, p->ctime, ticks, p->rutime, p->retime, p->stime);
   return 1;
 }
 
